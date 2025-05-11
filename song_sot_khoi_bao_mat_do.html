@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sống Sót Khỏi Bảo Mắt Đỏ</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+            background-color: #000;
+            color: white;
+            touch-action: none;
+        }
+        
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        #canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+        }
+        
+        #menuScreen, #gameScreen, #upgradeScreen, #settingsScreen, #leaderboardScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 10;
+        }
+        
+        #gameScreen {
+            display: none;
+            background-color: transparent;
+        }
+        
+        .menuButton {
+            margin: 15px;
+            padding: 15px 30px;
+            font-size: 24px;
+            background-color: #8B0000;
+            color: white;
+            border: 2px solid #FF0000;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .menuButton:hover {
+            background-color: #FF0000;
+            transform: scale(1.05);
+        }
+        
+        #menuTitle {
+            font-size: 48px;
+            color: #FF0000;
+            margin-bottom: 40px;
+            text-shadow: 0 0 10px #FF0000;
+        }
+        
+        #menuImage {
+            width: 300px;
+            height: 200px;
+            background-image: url('https://i.ibb.co/k2pkj12J/hinh-2.jpg');
+            background-size: cover;
+            margin-bottom: 30px;
+            border: 3px solid #8B0000;
+            border-radius: 10px;
+        }
+        
+        #difficultySelection {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        
+        .difficultyButton {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #333;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .difficultyButton:hover {
+            background-color: #555;
+        }
+        
+        #hud {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 5;
+            color: white;
+            font-size: 18px;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        #healthBar, #staminaBar {
+            width: 200px;
+            height: 20px;
+            background-color: #333;
+            margin: 5px 0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        #healthFill {
+            width: 100%;
+            height: 100%;
+            background-color: #FF0000;
+            transition: width 0.3s;
+        }
+        
+        #staminaFill {
+            width: 100%;
+            height: 100%;
+            background-color: #00FF00;
+            transition: width 0.3s;
+        }
+        
+        #monsterOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://i.ibb.co/wNZ5qRKc/hinh-3.jpg');
+            background-size: cover;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 8;
+            transition: opacity 0.5s;
+        }
+        
+        #jumpScare {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://i.ibb.co/dw4bj1ys/hinh-1.jpg');
+            background-size: cover;
+            display: none;
+            z-index: 9;
+        }
+        
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            z-index: 5;
+        }
+        
+        .controlButton {
+            width: 60px;
+            height: 60px;
+            margin: 0 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: 2px solid white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            user-select: none;
+        }
+        
+        #fullscreenButton {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: 1px solid white;
+            border-radius: 5px;
+            z-index: 20;
+            cursor: pointer;
+        }
+        
+        #gameOverScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 15;
+        }
+        
+        #gameOverText {
+            font-size: 48px;
+            color: #FF0000;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        #puzzleScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 12;
+        }
+        
+        #puzzleText {
+            font-size: 24px;
+            color: white;
+            margin-bottom: 20px;
+            text-align: center;
+            max-width: 80%;
+        }
+        
+        #puzzleAnswer {
+            padding: 10px;
+            font-size: 18px;
+            width: 200px;
+            margin-bottom: 20px;
+        }
+        
+        #puzzleSubmit {
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #8B0000;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .upgradeItem {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 80%;
+            margin: 10px 0;
+            padding: 10px;
+            background-color: rgba(51, 51, 51, 0.7);
+            border-radius: 5px;
+        }
+        
+        .upgradeButton {
+            padding: 5px 10px;
+            background-color: #8B0000;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        @media (max-width: 768px) {
+            .menuButton {
+                padding: 10px 20px;
+                font-size: 18px;
+            }
+            
+            #menuTitle {
+                font-size: 36px;
+            }
+            
+            #menuImage {
+                width: 200px;
+                height: 133px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="canvas"></canvas>
+        
+        <div id="hud">
+            <div>Ngày: <span id="dayDisplay">1</span>/7</div>
+            <div>Thời gian: <span id="timeDisplay">00:00</span></div>
+            <div>Tiền: $<span id="moneyDisplay">0</span></div>
+            <div>Điểm: <span id="scoreDisplay">0</span></div>
+            <div>Máu: <span id="healthText">100</span>/100</div>
+            <div id="healthBar"><div id="healthFill"></div></div>
+            <div>Thể lực: <span id="staminaText">100</span>/100</div>
+            <div id="staminaBar"><div id="staminaFill"></div></div>
+        </div>
+        
+        <div id="monsterOverlay"></div>
+        
+        <div id="jumpScare"></div>
+        
+        <div id="controls">
+            <div class="controlButton" id="forwardBtn">↑</div>
+            <div class="controlButton" id="leftBtn">←</div>
+            <div class="controlButton" id="backBtn">↓</div>
+            <div class="controlButton" id="rightBtn">→</div>
+            <div class="controlButton" id="shootBtn">Bắn</div>
+            <div class="controlButton" id="runBtn">Chạy</div>
+        </div>
+        
+        <button id="fullscreenButton">Toàn màn hình</button>
+        
+        <div id="menuScreen">
+            <div id="menuImage"></div>
+            <h1 id="menuTitle">SỐNG SÓT KHỎI BẢO MẮT ĐỎ</h1>
+            <button class="menuButton" id="playButton">Chơi</button>
+            <button class="menuButton" id="upgradeButton">Nâng cấp</button>
+            <button class="menuButton" id="settingsButton">Cài đặt</button>
+            <button class="menuButton" id="leaderboardButton">Bảng xếp hạng</button>
+        </div>
+        
+        <div id="gameScreen">
+            <h2>Chọn độ khó</h2>
+            <div id="difficultySelection">
+                <button class="difficultyButton" data-difficulty="easy">Dễ</button>
+                <button class="difficultyButton" data-difficulty="normal">Bình thường</button>
+                <button class="difficultyButton" data-difficulty="hard">Khó</button>
+                <button class="difficultyButton" data-difficulty="nightmare">Ác mộng</button>
+            </div>
+            <button class="menuButton" id="backToMenu">Quay lại Menu</button>
+        </div>
+        
+        <div id="upgradeScreen">
+            <h2>Cửa hàng nâng cấp</h2>
+            <div class="upgradeItem">
+                <span>Sức mạnh súng (Hiện tại: +<span id="currentDamage">10</span> sát thương)</span>
+                <button class="upgradeButton" id="upgradeDamage">Nâng cấp ($<span id="damageCost">100</span>)</button>
+            </div>
+            <div class="upgradeItem">
+                <span>Thể lực tối đa (Hiện tại: <span id="currentStamina">100</span>)</span>
+                <button class="upgradeButton" id="upgradeStamina">Nâng cấp ($<span id="staminaCost">150</span>)</button>
+            </div>
+            <div class="upgradeItem">
+                <span>Tốc độ chạy (Hiện tại: <span id="currentSpeed">1</span>x)</span>
+                <button class="upgradeButton" id="upgradeSpeed">Nâng cấp ($<span id="speedCost">200</span>)</button>
+            </div>
+            <button class="menuButton" id="backToMenuFromUpgrade">Quay lại Menu</button>
+        </div>
+        
+        <div id="settingsScreen">
+            <h2>Cài đặt</h2>
+            <div style="margin: 20px;">
+                <label for="volumeControl">Âm lượng: </label>
+                <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="0.5">
+            </div>
+            <button class="menuButton" id="backToMenuFromSettings">Quay lại Menu</button>
+        </div>
+        
+        <div id="leaderboardScreen">
+            <h2>Bảng xếp hạng</h2>
+            <div id="leaderboardList" style="margin: 20px; max-height: 60vh; overflow-y: auto;"></div>
+            <button class="menuButton" id="backToMenuFromLeaderboard">Quay lại Menu</button>
+        </div>
+        
+        <div id="puzzleScreen">
+            <h2>Câu đố ngày <span id="puzzleDay">1</span></h2>
+            <p id="puzzleText">Đây là câu đố mẫu. Bạn phải giải nó để tiếp tục sống sót.</p>
+            <input type="text" id="puzzleAnswer" placeholder="Nhập câu trả lời...">
+            <button id="puzzleSubmit">Gửi</button>
+        </div>
+        
+        <div id="gameOverScreen">
+            <h1 id="gameOverText">NGU THÌ CHẾT ĐI</h1>
+            <button class="menuButton" id="playAgainButton">Chơi lại</button>
+            <button class="menuButton" id="menuButtonAfterGameOver">Về Menu</button>
+        </div>
+    </div>
+
+    <audio id="backgroundSound" loop>
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-ominous-drone-2277.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="heartbeatSound" loop>
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-fast-heartbeat-757.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="gunSound">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-short-gun-shot-1670.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="jumpScareSound">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-horror-laugh-428.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="monsterCatchSound">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-angry-monster-roar-11.mp3" type="audio/mpeg">
+    </audio>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
+    <script>
+        // Game state
+        const gameState = {
+            currentScreen: 'menu',
+            difficulty: 'normal',
+            isPlaying: false,
+            isPaused: false,
+            day: 1,
+            time: 0,
+            score: 0,
+            money: 0,
+            health: 100,
+            maxHealth: 100,
+            stamina: 100,
+            maxStamina: 100,
+            damage: 10,
+            playerSpeed: 1,
+            isRunning: false,
+            isMonsterNear: false,
+            monsterHealth: 50,
+            monsterSpawnRate: 0.001,
+            puzzleSolved: false,
+            gameOver: false,
+            upgrades: {
+                damage: { level: 1, cost: 100 },
+                stamina: { level: 1, cost: 150 },
+                speed: { level: 1, cost: 200 }
+            },
+            leaderboard: []
+        };
+
+        // Load saved data from cookies
+        function loadGameData() {
+            const savedData = getCookie('survivalGameData');
+            if (savedData) {
+                try {
+                    const data = JSON.parse(savedData);
+                    gameState.money = data.money || 0;
+                    gameState.score = data.score || 0;
+                    gameState.upgrades = data.upgrades || gameState.upgrades;
+                    gameState.leaderboard = data.leaderboard || [];
+                } catch (e) {
+                    console.error('Error loading saved data:', e);
+                }
+            }
+        }
+
+        // Save game data to cookies
+        function saveGameData() {
+            const data = {
+                money: gameState.money,
+                score: gameState.score,
+                upgrades: gameState.upgrades,
+                leaderboard: gameState.leaderboard
+            };
+            setCookie('survivalGameData', JSON.stringify(data), 365);
+        }
+
+        // Cookie helper functions
+        function setCookie(name, value, days) {
+            const date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            const expires = "expires=" + date.toUTCString();
+            document.cookie = name + "=" + value + ";" + expires + ";path=/";
+        }
+
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+
+        // DOM elements
+        const canvas = document.getElementById('canvas');
+        const menuScreen = document.getElementById('menuScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const upgradeScreen = document.getElementById('upgradeScreen');
+        const settingsScreen = document.getElementById('settingsScreen');
+        const leaderboardScreen = document.getElementById('leaderboardScreen');
+        const puzzleScreen = document.getElementById('puzzleScreen');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        
+        const playButton = document.getElementById('playButton');
+        const upgradeButton = document.getElementById('upgradeButton');
+        const settingsButton = document.getElementById('settingsButton');
+        const leaderboardButton = document.getElementById('leaderboardButton');
+        const backToMenuButtons = document.querySelectorAll('[id^="backToMenu"]');
+        const difficultyButtons = document.querySelectorAll('.difficultyButton');
+        const playAgainButton = document.getElementById('playAgainButton');
+        const menuButtonAfterGameOver = document.getElementById('menuButtonAfterGameOver');
+        
+        const dayDisplay = document.getElementById('dayDisplay');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const moneyDisplay = document.getElementById('moneyDisplay');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const healthText = document.getElementById('healthText');
+        const healthFill = document.getElementById('healthFill');
+        const staminaText = document.getElementById('staminaText');
+        const staminaFill = document.getElementById('staminaFill');
+        
+        const monsterOverlay = document.getElementById('monsterOverlay');
+        const jumpScare = document.getElementById('jumpScare');
+        
+        const forwardBtn = document.getElementById('forwardBtn');
+        const leftBtn = document.getElementById('leftBtn');
+        const backBtn = document.getElementById('backBtn');
+        const rightBtn = document.getElementById('rightBtn');
+        const shootBtn = document.getElementById('shootBtn');
+        const runBtn = document.getElementById('runBtn');
+        
+        const fullscreenButton = document.getElementById('fullscreenButton');
+        
+        // Audio elements
+        const backgroundSound = document.getElementById('backgroundSound');
+        const heartbeatSound = document.getElementById('heartbeatSound');
+        const gunSound = document.getElementById('gunSound');
+        const jumpScareSound = document.getElementById('jumpScareSound');
+        const monsterCatchSound = document.getElementById('monsterCatchSound');
+        const volumeControl = document.getElementById('volumeControl');
+        
+        // Three.js variables
+        let scene, camera, renderer, controls;
+        let player, monster;
+        let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+        let isShooting = false;
+        let lastShotTime = 0;
+        let clock = new THREE.Clock();
+        let monsterPosition = new THREE.Vector3();
+        let monsterSpawned = false;
+        let monsterDistance = 0;
+        
+        // Game map size
+        const mapSize = 1000;
+        
+        // Initialize the game
+        function init() {
+            loadGameData();
+            setupEventListeners();
+            setupAudio();
+            updateUI();
+            
+            // Show menu screen by default
+            showScreen('menu');
+            
+            // Initialize Three.js scene (but don't render until game starts)
+            initThreeJS();
+            
+            // Start game loop
+            animate();
+        }
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            // Menu navigation
+            playButton.addEventListener('click', () => showScreen('game'));
+            upgradeButton.addEventListener('click', () => showScreen('upgrade'));
+            settingsButton.addEventListener('click', () => showScreen('settings'));
+            leaderboardButton.addEventListener('click', () => showScreen('leaderboard'));
+            
+            // Back to menu buttons
+            backToMenuButtons.forEach(btn => {
+                btn.addEventListener('click', () => showScreen('menu'));
+            });
+            
+            // Difficulty selection
+            difficultyButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    gameState.difficulty = btn.dataset.difficulty;
+                    startGame();
+                });
+            });
+            
+            // Game over buttons
+            playAgainButton.addEventListener('click', () => {
+                resetGame();
+                startGame();
+            });
+            
+            menuButtonAfterGameOver.addEventListener('click', () => {
+                resetGame();
+                showScreen('menu');
+            });
+            
+            // Fullscreen button
+            fullscreenButton.addEventListener('click', toggleFullscreen);
+            
+            // Volume control
+            volumeControl.addEventListener('input', () => {
+                setVolume(volumeControl.value);
+            });
+            
+            // Mobile controls
+            forwardBtn.addEventListener('touchstart', () => moveForward = true);
+            forwardBtn.addEventListener('touchend', () => moveForward = false);
+            leftBtn.addEventListener('touchstart', () => moveLeft = true);
+            leftBtn.addEventListener('touchend', () => moveLeft = false);
+            backBtn.addEventListener('touchstart', () => moveBackward = true);
+            backBtn.addEventListener('touchend', () => moveBackward = false);
+            rightBtn.addEventListener('touchstart', () => moveRight = true);
+            rightBtn.addEventListener('touchend', () => moveRight = false);
+            shootBtn.addEventListener('touchstart', () => isShooting = true);
+            shootBtn.addEventListener('touchend', () => isShooting = false);
+            runBtn.addEventListener('touchstart', () => gameState.isRunning = true);
+            runBtn.addEventListener('touchend', () => gameState.isRunning = false);
+            
+            // Keyboard controls
+            document.addEventListener('keydown', onKeyDown);
+            document.addEventListener('keyup', onKeyUp);
+            
+            // Pointer lock controls
+            document.addEventListener('click', () => {
+                if (gameState.isPlaying && !document.pointerLockElement) {
+                    canvas.requestPointerLock();
+                }
+            });
+            
+            document.addEventListener('pointerlockchange', () => {
+                if (document.pointerLockElement === canvas) {
+                    controls.lock();
+                } else {
+                    controls.unlock();
+                }
+            });
+            
+            // Upgrade buttons
+            document.getElementById('upgradeDamage').addEventListener('click', () => upgrade('damage'));
+            document.getElementById('upgradeStamina').addEventListener('click', () => upgrade('stamina'));
+            document.getElementById('upgradeSpeed').addEventListener('click', () => upgrade('speed'));
+            
+            // Puzzle submit
+            document.getElementById('puzzleSubmit').addEventListener('click', checkPuzzleAnswer);
+        }
+        
+        // Set up audio
+        function setupAudio() {
+            setVolume(0.5);
+            backgroundSound.play().catch(e => console.log('Audio play error:', e));
+        }
+        
+        // Set volume for all sounds
+        function setVolume(volume) {
+            backgroundSound.volume = volume;
+            heartbeatSound.volume = volume;
+            gunSound.volume = volume * 0.7; // Gun is a bit loud
+            jumpScareSound.volume = volume;
+            monsterCatchSound.volume = volume;
+        }
+        
+        // Show specific screen
+        function showScreen(screen) {
+            menuScreen.style.display = 'none';
+            gameScreen.style.display = 'none';
+            upgradeScreen.style.display = 'none';
+            settingsScreen.style.display = 'none';
+            leaderboardScreen.style.display = 'none';
+            puzzleScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            
+            gameState.currentScreen = screen;
+            
+            switch (screen) {
+                case 'menu':
+                    menuScreen.style.display = 'flex';
+                    break;
+                case 'game':
+                    gameScreen.style.display = 'flex';
+                    break;
+                case 'upgrade':
+                    updateUpgradeUI();
+                    upgradeScreen.style.display = 'flex';
+                    break;
+                case 'settings':
+                    settingsScreen.style.display = 'flex';
+                    break;
+                case 'leaderboard':
+                    updateLeaderboardUI();
+                    leaderboardScreen.style.display = 'flex';
+                    break;
+                case 'puzzle':
+                    setupPuzzle();
+                    puzzleScreen.style.display = 'flex';
+                    break;
+                case 'gameOver':
+                    gameOverScreen.style.display = 'flex';
+                    break;
+            }
+        }
+        
+        // Initialize Three.js
+        function initThreeJS() {
+            // Scene
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x000000, 0.001);
+            
+            // Camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.y = 1.6; // Approximate human eye height
+            
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            
+            // Controls
+            controls = new THREE.PointerLockControls(camera, document.body);
+            
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0x404040);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+            directionalLight.position.set(0, 1, 0);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 1024;
+            directionalLight.shadow.mapSize.height = 1024;
+            scene.add(directionalLight);
+            
+            // Skybox
+            const skyGeometry = new THREE.SphereGeometry(500, 32, 32);
+            const skyMaterial = new THREE.MeshBasicMaterial({
+                color: 0x000000,
+                side: THREE.BackSide
+            });
+            const skybox = new THREE.Mesh(skyGeometry, skyMaterial);
+            scene.add(skybox);
+            
+            // Ground
+            const groundGeometry = new THREE.PlaneGeometry(mapSize, mapSize, 100, 100);
+            const groundMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x333333,
+                roughness: 0.8
+            });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.receiveShadow = true;
+            scene.add(ground);
+            
+            // Player (invisible, just for collision)
+            player = new THREE.Mesh(
+                new THREE.BoxGeometry(0.5, 1.8, 0.5),
+                new THREE.MeshBasicMaterial({ visible: false })
+            );
+            player.position.y = 0.9;
+            scene.add(player);
+            
+            // Monster (initially not visible)
+            const monsterGeometry = new THREE.BoxGeometry(1, 2, 1);
+            const monsterMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0xFF0000,
+                transparent: true,
+                opacity: 0
+            });
+            monster = new THREE.Mesh(monsterGeometry, monsterMaterial);
+            monster.position.set(0, 0, 10);
+            scene.add(monster);
+            
+            // Random obstacles
+            createRandomObstacles();
+            
+            // Window resize handler
+            window.addEventListener('resize', onWindowResize);
+        }
+        
+        // Create random obstacles on the map
+        function createRandomObstacles() {
+            const obstacleCount = 50;
+            const obstacleGeometry = new THREE.BoxGeometry(5, 5, 5);
+            const obstacleMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            
+            for (let i = 0; i < obstacleCount; i++) {
+                const obstacle = new THREE.Mesh(obstacleGeometry, obstacleMaterial);
+                obstacle.position.x = Math.random() * mapSize - mapSize / 2;
+                obstacle.position.z = Math.random() * mapSize - mapSize / 2;
+                obstacle.position.y = 2.5;
+                obstacle.castShadow = true;
+                obstacle.receiveShadow = true;
+                scene.add(obstacle);
+            }
+        }
+        
+        // Window resize handler
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+        
+        // Keyboard controls
+        function onKeyDown(event) {
+            if (!gameState.isPlaying) return;
+            
+            switch (event.code) {
+                case 'KeyW':
+                case 'ArrowUp':
+                    moveForward = true;
+                    break;
+                case 'KeyA':
+                case 'ArrowLeft':
+                    moveLeft = true;
+                    break;
+                case 'KeyS':
+                case 'ArrowDown':
+                    moveBackward = true;
+                    break;
+                case 'KeyD':
+                case 'ArrowRight':
+                    moveRight = true;
+                    break;
+                case 'ShiftLeft':
+                case 'ShiftRight':
+                    gameState.isRunning = true;
+                    break;
+                case 'Space':
+                    isShooting = true;
+                    break;
+                case 'Escape':
+                    if (document.pointerLockElement === canvas) {
+                        document.exitPointerLock();
+                    }
+                    break;
+            }
+        }
+        
+        function onKeyUp(event) {
+            if (!gameState.isPlaying) return;
+            
+            switch (event.code) {
+                case 'KeyW':
+                case 'ArrowUp':
+                    moveForward = false;
+                    break;
+                case 'KeyA':
+                case 'ArrowLeft':
+                    moveLeft = false;
+                    break;
+                case 'KeyS':
+                case 'ArrowDown':
+                    moveBackward = false;
+                    break;
+                case 'KeyD':
+                case 'ArrowRight':
+                    moveRight = false;
+                    break;
+                case 'ShiftLeft':
+                case 'ShiftRight':
+                    gameState.isRunning = false;
+                    break;
+                case 'Space':
+                    isShooting = false;
+                    break;
+            }
+        }
+        
+        // Start the game
+        function startGame() {
+            gameState.isPlaying = true;
+            gameState.day = 1;
+            gameState.time = 0;
+            gameState.health = gameState.maxHealth;
+            gameState.stamina = gameState.maxStamina;
+            gameState.puzzleSolved = false;
+            gameState.gameOver = false;
+            
+            // Set difficulty
+            switch (gameState.difficulty) {
+                case 'easy':
+                    gameState.monsterSpawnRate = 0.0005;
+                    gameState.monsterHealth = 30;
+                    break;
+                case 'normal':
+                    gameState.monsterSpawnRate = 0.001;
+                    gameState.monsterHealth = 50;
+                    break;
+                case 'hard':
+                    gameState.monsterSpawnRate = 0.002;
+                    gameState.monsterHealth = 70;
+                    break;
+                case 'nightmare':
+                    gameState.monsterSpawnRate = 0.004;
+                    gameState.monsterHealth = 100;
+                    break;
+            }
+            
+            // Reset player position
+            player.position.set(0, 0.9, 0);
+            camera.position.set(0, 1.6, 0);
+            controls.getObject().rotation.set(0, 0, 0);
+            
+            // Hide menu, show game
+            showScreen('none');
+            canvas.style.display = 'block';
+            
+            // Start pointer lock
+            canvas.requestPointerLock();
+            
+            // Start game time
+            lastShotTime = 0;
+            clock.start();
+            
+            // Update UI
+            updateUI();
+        }
+        
+        // Reset game state
+        function resetGame() {
+            gameState.isPlaying = false;
+            gameState.day = 1;
+            gameState.time = 0;
+            gameState.health = gameState.maxHealth;
+            gameState.stamina = gameState.maxStamina;
+            gameState.puzzleSolved = false;
+            gameState.gameOver = false;
+            gameState.isMonsterNear = false;
+            
+            // Reset monster
+            monster.material.opacity = 0;
+            monsterSpawned = false;
+            
+            // Stop sounds
+            heartbeatSound.pause();
+            heartbeatSound.currentTime = 0;
+            
+            // Update UI
+            updateUI();
+        }
+        
+        // Game over
+        function gameOver() {
+            gameState.isPlaying = false;
+            gameState.gameOver = true;
+            
+            // Add to leaderboard
+            gameState.leaderboard.push({
+                name: 'Người chơi',
+                score: gameState.score,
+                day: gameState.day,
+                difficulty: gameState.difficulty,
+                date: new Date().toLocaleDateString()
+            });
+            
+            // Sort leaderboard by score
+            gameState.leaderboard.sort((a, b) => b.score - a.score);
+            
+            // Keep only top 10
+            if (gameState.leaderboard.length > 10) {
+                gameState.leaderboard = gameState.leaderboard.slice(0, 10);
+            }
+            
+            // Save game data
+            saveGameData();
+            
+            // Show game over screen
+            showScreen('gameOver');
+        }
+        
+        // Update game state
+        function update(delta) {
+            if (!gameState.isPlaying || gameState.gameOver) return;
+            
+            // Update game time (1h in game = 30s real time)
+            gameState.time += delta;
+            const gameHours = Math.floor(gameState.time / 30);
+            
+            // Check if day has passed (7 days to survive)
+            if (gameHours >= 24) {
+                gameState.time = 0;
+                gameState.day++;
+                
+                if (gameState.day > 7) {
+                    // Player survived all 7 days
+                    gameState.score += 1000 * getDifficultyMultiplier();
+                    saveGameData();
+                    gameOver();
+                    return;
+                } else {
+                    // Show puzzle for the new day
+                    showPuzzle();
+                }
+            }
+            
+            // Update UI
+            updateUI();
+            
+            // Player movement
+            const speed = gameState.playerSpeed * (gameState.isRunning ? 2 : 1);
+            const moveSpeed = speed * delta;
+            
+            if (moveForward) {
+                controls.moveForward(moveSpeed);
+                consumeStamina(10 * delta);
+            }
+            if (moveBackward) controls.moveForward(-moveSpeed * 0.7);
+            if (moveLeft) controls.moveRight(-moveSpeed * 0.7);
+            if (moveRight) controls.moveRight(moveSpeed * 0.7);
+            
+            // Regenerate stamina when not running
+            if (!gameState.isRunning) {
+                regenerateStamina(5 * delta);
+            }
+            
+            // Keep player within map bounds
+            player.position.x = THREE.MathUtils.clamp(player.position.x, -mapSize/2 + 10, mapSize/2 - 10);
+            player.position.z = THREE.MathUtils.clamp(player.position.z, -mapSize/2 + 10, mapSize/2 - 10);
+            
+            // Monster logic
+            if (!monsterSpawned && Math.random() < gameState.monsterSpawnRate) {
+                spawnMonster();
+            }
+            
+            if (monsterSpawned) {
+                updateMonster(delta);
+            }
+            
+            // Shooting
+            if (isShooting && Date.now() - lastShotTime > 300) {
+                shoot();
+                lastShotTime = Date.now();
+            }
+        }
+        
+        // Spawn monster at random position
+        function spawnMonster() {
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 30 + Math.random() * 70; // 30-100 units away
+            monster.position.x = player.position.x + Math.cos(angle) * distance;
+            monster.position.z = player.position.z + Math.sin(angle) * distance;
+            monster.material.opacity = 0;
+            monsterSpawned = true;
+            gameState.monsterHealth = 50 * getDifficultyMultiplier();
+        }
+        
+        // Update monster behavior
+        function updateMonster(delta) {
+            // Calculate distance to player
+            monsterPosition.set(monster.position.x, 0, monster.position.z);
+            const playerPosition = new THREE.Vector3(player.position.x, 0, player.position.z);
+            monsterDistance = playerPosition.distanceTo(monsterPosition);
+            
+            // Monster becomes visible when close
+            if (monsterDistance < 30) {
+                monster.material.opacity = THREE.MathUtils.lerp(
+                    monster.material.opacity, 
+                    0.7 * (1 - monsterDistance / 30), 
+                    0.1
+                );
+                
+                // Play heartbeat when monster is very close
+                if (monsterDistance < 15) {
+                    gameState.isMonsterNear = true;
+                    if (heartbeatSound.paused) {
+                        heartbeatSound.play().catch(e => console.log('Audio play error:', e));
+                    }
+                } else {
+                    gameState.isMonsterNear = false;
+                    heartbeatSound.pause();
+                    heartbeatSound.currentTime = 0;
+                }
+            } else {
+                monster.material.opacity = THREE.MathUtils.lerp(monster.material.opacity, 0, 0.1);
+                gameState.isMonsterNear = false;
+                heartbeatSound.pause();
+                heartbeatSound.currentTime = 0;
+            }
+            
+            // Update monster overlay
+            monsterOverlay.style.opacity = gameState.isMonsterNear ? '0.7' : '0';
+            
+            // Monster moves toward player
+            if (monsterDistance > 2) {
+                const direction = new THREE.Vector3();
+                direction.subVectors(playerPosition, monsterPosition).normalize();
+                const moveSpeed = 3 * delta * getDifficultyMultiplier();
+                monster.position.x += direction.x * moveSpeed;
+                monster.position.z += direction.z * moveSpeed;
+            } else {
+                // Monster catches player
+                catchPlayer();
+            }
+            
+            // Monster despawns if too far
+            if (monsterDistance > 150) {
+                monsterSpawned = false;
+                monster.material.opacity = 0;
+                gameState.isMonsterNear = false;
+                heartbeatSound.pause();
+                heartbeatSound.currentTime = 0;
+            }
+        }
+        
+        // Player caught by monster
+        function catchPlayer() {
+            // Play jump scare
+            jumpScareSound.play().catch(e => console.log('Audio play error:', e));
+            monsterCatchSound.play().catch(e => console.log('Audio play error:', e));
+            
+            // Show jump scare image
+            jumpScare.style.display = 'block';
+            setTimeout(() => {
+                jumpScare.style.display = 'none';
+            }, 1000);
+            
+            // Damage player
+            gameState.health -= 20;
+            if (gameState.health <= 0) {
+                gameState.health = 0;
+                gameOver();
+                return;
+            }
+            
+            // Increase day count
+            gameState.day++;
+            if (gameState.day > 7) {
+                gameOver();
+                return;
+            }
+            
+            // Teleport player to safe zone
+            player.position.set(0, 0.9, 0);
+            camera.position.set(0, 1.6, 0);
+            controls.getObject().rotation.set(0, 0, 0);
+            
+            // Reset monster
+            monsterSpawned = false;
+            monster.material.opacity = 0;
+            gameState.isMonsterNear = false;
+            heartbeatSound.pause();
+            heartbeatSound.currentTime = 0;
+            
+            // Show puzzle for the new day
+            showPuzzle();
+            
+            // Update UI
+            updateUI();
+        }
+        
+        // Player shoots
+        function shoot() {
+            if (!monsterSpawned) return;
+            
+            // Play gun sound
+            gunSound.currentTime = 0;
+            gunSound.play().catch(e => console.log('Audio play error:', e));
+            
+            // Check if monster is in sight
+            const raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+            const intersects = raycaster.intersectObject(monster);
+            
+            if (intersects.length > 0) {
+                // Hit monster
+                gameState.monsterHealth -= gameState.damage;
+                gameState.score += 10 * getDifficultyMultiplier();
+                
+                if (gameState.monsterHealth <= 0) {
+                    // Monster killed
+                    gameState.score += 50 * getDifficultyMultiplier();
+                    gameState.money += 20 * getDifficultyMultiplier();
+                    monsterSpawned = false;
+                    monster.material.opacity = 0;
+                    gameState.isMonsterNear = false;
+                    heartbeatSound.pause();
+                    heartbeatSound.currentTime = 0;
+                }
+            }
+            
+            // Update UI
+            updateUI();
+        }
+        
+        // Consume stamina
+        function consumeStamina(amount) {
+            if (gameState.isRunning) {
+                gameState.stamina -= amount;
+                if (gameState.stamina <= 0) {
+                    gameState.stamina = 0;
+                    gameState.isRunning = false;
+                }
+            }
+        }
+        
+        // Regenerate stamina
+        function regenerateStamina(amount) {
+            gameState.stamina += amount;
+            if (gameState.stamina > gameState.maxStamina) {
+                gameState.stamina = gameState.maxStamina;
+            }
+        }
+        
+        // Show puzzle screen
+        function showPuzzle() {
+            gameState.puzzleSolved = false;
+            showScreen('puzzle');
+        }
+        
+        // Setup puzzle for current day
+        function setupPuzzle() {
+            const puzzleDayElement = document.getElementById('puzzleDay');
+            puzzleDayElement.textContent = gameState.day;
+            
+            const puzzleTextElement = document.getElementById('puzzleText');
+            const puzzleAnswerElement = document.getElementById('puzzleAnswer');
+            puzzleAnswerElement.value = '';
+            
+            // Simple puzzle examples (in a real game, you'd have more complex puzzles)
+            switch (gameState.day) {
+                case 1:
+                    puzzleTextElement.textContent = 'Câu đố ngày 1: Cái gì càng kéo càng ngắn?';
+                    break;
+                case 2:
+                    puzzleTextElement.textContent = 'Câu đố ngày 2: Cái gì đi thì nằm, đứng cũng nằm, nhưng nằm lại đứng?';
+                    break;
+                case 3:
+                    puzzleTextElement.textContent = 'Câu đố ngày 3: Cái gì đen khi bạn mua nó, đỏ khi bạn dùng nó và xám xịt khi bạn vứt nó đi?';
+                    break;
+                case 4:
+                    puzzleTextElement.textContent = 'Câu đố ngày 4: Cái gì luôn đến nhưng không bao giờ đến?';
+                    break;
+                case 5:
+                    puzzleTextElement.textContent = 'Câu đố ngày 5: Cái gì bạn không thể cầm nhưng có thể dễ dàng đánh mất?';
+                    break;
+                case 6:
+                    puzzleTextElement.textContent = 'Câu đố ngày 6: Cái gì có thể đo được nhưng không có chiều dài, chiều rộng hay chiều cao?';
+                    break;
+                case 7:
+                    puzzleTextElement.textContent = 'Câu đố ngày 7: Cái gì thuộc về bạn nhưng người khác sử dụng nhiều hơn bạn?';
+                    break;
+                default:
+                    puzzleTextElement.textContent = 'Bạn đã sống sót qua 7 ngày!';
+            }
+        }
+        
+        // Check puzzle answer
+        function checkPuzzleAnswer() {
+            const puzzleAnswerElement = document.getElementById('puzzleAnswer');
+            const answer = puzzleAnswerElement.value.toLowerCase().trim();
+            let correct = false;
+            
+            // Check answer based on day
+            switch (gameState.day) {
+                case 1:
+                    correct = answer.includes('thuốc lá') || answer.includes('điếu thuốc');
+                    break;
+                case 2:
+                    correct = answer.includes('bàn chân');
+                    break;
+                case 3:
+                    correct = answer.includes('than');
+                    break;
+                case 4:
+                    correct = answer.includes('ngày mai');
+                    break;
+                case 5:
+                    correct = answer.includes('lời hứa');
+                    break;
+                case 6:
+                    correct = answer.includes('nhiệt độ');
+                    break;
+                case 7:
+                    correct = answer.includes('tên') || answer.includes('tên của bạn');
+                    break;
+            }
+            
+            if (correct) {
+                gameState.puzzleSolved = true;
+                gameState.score += 100 * getDifficultyMultiplier();
+                gameState.money += 50 * getDifficultyMultiplier();
+                showScreen('none');
+                updateUI();
+            } else {
+                alert('Sai rồi! Thử lại đi.');
+                puzzleAnswerElement.value = '';
+                puzzleAnswerElement.focus();
+            }
+        }
+        
+        // Upgrade player stats
+        function upgrade(stat) {
+            const upgrade = gameState.upgrades[stat];
+            
+            if (gameState.money >= upgrade.cost) {
+                gameState.money -= upgrade.cost;
+                upgrade.level++;
+                upgrade.cost = Math.floor(upgrade.cost * 1.5);
+                
+                // Apply upgrade
+                switch (stat) {
+                    case 'damage':
+                        gameState.damage = 10 + upgrade.level * 5;
+                        break;
+                    case 'stamina':
+                        gameState.maxStamina = 100 + upgrade.level * 20;
+                        gameState.stamina = gameState.maxStamina;
+                        break;
+                    case 'speed':
+                        gameState.playerSpeed = 1 + upgrade.level * 0.2;
+                        break;
+                }
+                
+                // Save game
+                saveGameData();
+                
+                // Update UI
+                updateUI();
+                updateUpgradeUI();
+            } else {
+                alert('Không đủ tiền!');
+            }
+        }
+        
+        // Update UI elements
+        function updateUI() {
+            // Game stats
+            dayDisplay.textContent = gameState.day;
+            
+            const gameHours = Math.floor(gameState.time / 30);
+            const gameMinutes = Math.floor((gameState.time % 30) * 2);
+            timeDisplay.textContent = `${gameHours.toString().padStart(2, '0')}:${gameMinutes.toString().padStart(2, '0')}`;
+            
+            moneyDisplay.textContent = gameState.money;
+            scoreDisplay.textContent = gameState.score;
+            
+            // Health and stamina
+            healthText.textContent = Math.floor(gameState.health);
+            healthFill.style.width = `${(gameState.health / gameState.maxHealth) * 100}%`;
+            
+            staminaText.textContent = Math.floor(gameState.stamina);
+            staminaFill.style.width = `${(gameState.stamina / gameState.maxStamina) * 100}%`;
+        }
+        
+        // Update upgrade UI
+        function updateUpgradeUI() {
+            document.getElementById('currentDamage').textContent = gameState.damage;
+            document.getElementById('damageCost').textContent = gameState.upgrades.damage.cost;
+            
+            document.getElementById('currentStamina').textContent = gameState.maxStamina;
+            document.getElementById('staminaCost').textContent = gameState.upgrades.stamina.cost;
+            
+            document.getElementById('currentSpeed').textContent = gameState.playerSpeed.toFixed(1);
+            document.getElementById('speedCost').textContent = gameState.upgrades.speed.cost;
+        }
+        
+        // Update leaderboard UI
+        function updateLeaderboardUI() {
+            const leaderboardList = document.getElementById('leaderboardList');
+            leaderboardList.innerHTML = '';
+            
+            if (gameState.leaderboard.length === 0) {
+                leaderboardList.innerHTML = '<p>Chưa có dữ liệu xếp hạng</p>';
+                return;
+            }
+            
+            const table = document.createElement('table');
+            table.style.width = '100%';
+            table.style.borderCollapse = 'collapse';
+            
+            // Header
+            const headerRow = document.createElement('tr');
+            headerRow.innerHTML = `
+                <th style="padding: 8px; text-align: left; border-bottom: 1px solid #444;">Hạng</th>
+                <th style="padding: 8px; text-align: left; border-bottom: 1px solid #444;">Tên</th>
+                <th style="padding: 8px; text-align: left; border-bottom: 1px solid #444;">Điểm</th>
+                <th style="padding: 8px; text-align: left; border-bottom: 1px solid #444;">Ngày</th>
+                <th style="padding: 8px; text-align: left; border-bottom: 1px solid #444;">Độ khó</th>
+                <th style="padding: 8px; text-align: left; border-bottom: 1px solid #444;">Ngày chơi</th>
+            `;
+            table.appendChild(headerRow);
+            
+            // Rows
+            gameState.leaderboard.forEach((entry, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="padding: 8px; border-bottom: 1px solid #444;">${index + 1}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #444;">${entry.name}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #444;">${entry.score}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #444;">${entry.day}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #444;">${entry.difficulty}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #444;">${entry.date}</td>
+                `;
+                table.appendChild(row);
+            });
+            
+            leaderboardList.appendChild(table);
+        }
+        
+        // Get difficulty multiplier
+        function getDifficultyMultiplier() {
+            switch (gameState.difficulty) {
+                case 'easy': return 0.7;
+                case 'normal': return 1;
+                case 'hard': return 1.5;
+                case 'nightmare': return 2;
+                default: return 1;
+            }
+        }
+        
+        // Toggle fullscreen
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+        
+        // Main game loop
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const delta = clock.getDelta();
+            
+            // Update game state
+            update(delta);
+            
+            // Render scene
+            if (gameState.isPlaying && !gameState.gameOver && gameState.currentScreen === 'none') {
+                renderer.render(scene, camera);
+            }
+        }
+        
+        // Start the game
+        init();
+    </script>
+</body>
+</html>
